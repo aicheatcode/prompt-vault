@@ -17,10 +17,6 @@ jobs:
     name: Push source using clasp
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
-      SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
-      DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }}
 
     steps:
       - name: Checkout repository
@@ -45,8 +41,14 @@ jobs:
           fi
           node -e 'JSON.parse(require("fs").readFileSync("src/appsscript.json", "utf8"))'
 
+      - name: Install clasp
+        run: npm install --global @google/clasp@3
+
       - name: Restore clasp authentication and project configuration
         shell: bash
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
         run: |
           set -euo pipefail
           if [[ -z "$CLASPRC_JSON" ]]; then
@@ -62,22 +64,20 @@ jobs:
           node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(process.env.HOME+"/.clasprc.json","utf8")); if(!data || typeof data!=="object" || !Object.keys(data).length) throw new Error("Invalid CLASPRC_JSON");'
           node -e 'require("fs").writeFileSync(".clasp.json",JSON.stringify({scriptId:process.env.SCRIPT_ID,rootDir:"src"},null,2))'
 
-      - name: Install clasp
-        run: npm install --global @google/clasp@3
-
       - name: Push source to Apps Script
         run: clasp push --force
 
-      - name: Update existing web app deployment (optional)
-        if: ${{ env.DEPLOYMENT_ID != '' }}
+      - name: Update published web app (if DEPLOYMENT_ID is configured)
         shell: bash
+        env:
+          DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }}
         run: |
           set -euo pipefail
-          clasp create-deployment --deploymentId "$DEPLOYMENT_ID" --description "GitHub commit ${GITHUB_SHA::7}"
-
-      - name: Explain HEAD-only update
-        if: ${{ env.DEPLOYMENT_ID == '' }}
-        run: echo "::notice::Apps Script HEAD updated. To update an existing published web app URL automatically, also set the optional DEPLOYMENT_ID repository secret."
+          if [[ -n "$DEPLOYMENT_ID" ]]; then
+            clasp create-deployment --deploymentId "$DEPLOYMENT_ID" --description "GitHub commit ${GITHUB_SHA::7}"
+          else
+            echo "::notice::Apps Script HEAD updated. Set optional DEPLOYMENT_ID to update the existing published web app URL."
+          fi
 
       - name: Remove credentials from runner
         if: always()
