@@ -1,0 +1,85 @@
+name: Deploy Google Apps Script
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apps-script-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Push source using clasp
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+      SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
+      DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate Apps Script sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f src/appsscript.json ]]; then
+            echo "::error::Missing src/appsscript.json. No code will be pushed."
+            exit 1
+          fi
+          if ! find src -type f \( -name '*.gs' -o -name '*.js' -o -name '*.html' \) -print -quit | grep -q .; then
+            echo "::error::No Apps Script source files under src/. No code will be pushed."
+            exit 1
+          fi
+          node -e 'JSON.parse(require("fs").readFileSync("src/appsscript.json", "utf8"))'
+
+      - name: Restore clasp authentication and project configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLASPRC_JSON" ]]; then
+            echo "::error::Repository secret CLASPRC_JSON is missing."
+            exit 1
+          fi
+          if [[ -z "$SCRIPT_ID" ]]; then
+            echo "::error::Repository secret SCRIPT_ID is missing."
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(process.env.HOME+"/.clasprc.json","utf8")); if(!data || typeof data!=="object" || !Object.keys(data).length) throw new Error("Invalid CLASPRC_JSON");'
+          node -e 'require("fs").writeFileSync(".clasp.json",JSON.stringify({scriptId:process.env.SCRIPT_ID,rootDir:"src"},null,2))'
+
+      - name: Install clasp
+        run: npm install --global @google/clasp@3
+
+      - name: Push source to Apps Script
+        run: clasp push --force
+
+      - name: Update existing web app deployment (optional)
+        if: ${{ env.DEPLOYMENT_ID != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          clasp create-deployment --deploymentId "$DEPLOYMENT_ID" --description "GitHub commit ${GITHUB_SHA::7}"
+
+      - name: Explain HEAD-only update
+        if: ${{ env.DEPLOYMENT_ID == '' }}
+        run: echo "::notice::Apps Script HEAD updated. To update an existing published web app URL automatically, also set the optional DEPLOYMENT_ID repository secret."
+
+      - name: Remove credentials from runner
+        if: always()
+        shell: bash
+        run: rm -f "$HOME/.clasprc.json" .clasp.json
