@@ -93,7 +93,12 @@ async function load(){
     if(!Array.isArray(records)||records.length!==changes.catalogCount)throw Error('Catalogue integrity mismatch');
     base=records.map(p=>({...p,source:p.source||'archive'}));
     applyChanges(changes);
-    text($('loadStatus'),'Library ready.');
+    if(changes.feedStatus==='archive_unverified'){
+      errMsg('Archive available — live publishing status could not be verified. Recent changes or removals may not appear.');
+      text($('syncStatus'),'Archive snapshot only. New prompts, removals, and publishing status are not verified.');
+    } else {
+      text($('loadStatus'),'Library ready.');
+    }
   } catch(e) {
     base=[];all=[];liveLinks=[];rebuild();
     errMsg('The published library is temporarily unavailable. Please try again shortly.');
