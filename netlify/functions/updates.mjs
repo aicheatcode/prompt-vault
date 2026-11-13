@@ -7,6 +7,21 @@ const headers = {
   'Cache-Control': 'public, max-age=0, s-maxage=60',
   'X-Content-Type-Options': 'nosniff',
 };
+// Archive-only recovery is explicit: no live publication or withdrawal status is claimed.
+function archiveFallback(reason) {
+  const records=new Map();
+  for(const value of Object.values(catalogParts)){
+    for(const item of JSON.parse(gunzipSync(Buffer.from(value,'base64')).toString('utf8'))){
+      if(item && typeof item.id==='string' && typeof item.prompt==='string')records.set(item.id,item);
+    }
+  }
+  const snapshot=[...records.values()];
+  return new Response(JSON.stringify({
+    ok:true,feedStatus:'archive_unverified',warning:'Live publishing status unavailable. This is an archived snapshot; recent additions, edits, and removals cannot be confirmed.',
+    unavailableReason:reason,updatedAt:'',newPrompts:[],overrides:[],hidden:[],links:[],site:null,
+    catalogData:gzipSync(Buffer.from(JSON.stringify(snapshot)),{level:1}).toString('base64'),catalogCount:snapshot.length
+  }),{status:200,headers:{...headers,'Cache-Control':'no-store'}});
+}
 function errorResponse(status, code) {
   return new Response(JSON.stringify({ok:false,error:code}), {status, headers: {...headers,'Cache-Control':'no-store'}});
 }
@@ -25,10 +40,10 @@ export default async function handler(request) {
     upstream=await fetch(url.toString(),{
       method:'GET',redirect:'follow',headers:{'Accept':'application/json'},signal:AbortSignal.timeout(10000)
     });
-  } catch {return errorResponse(502,'BACKEND_UNREACHABLE');}
-  if(!upstream.ok) return errorResponse(502,'BACKEND_HTTP_ERROR');
+  } catch {return archiveFallback('BACKEND_UNREACHABLE');}
+  if(!upstream.ok) return archiveFallback('BACKEND_HTTP_'+upstream.status);
   const type=upstream.headers.get('content-type')||'';
-  if(!type.toLowerCase().includes('json'))return errorResponse(502,'BACKEND_NOT_JSON');
+  if(!type.toLowerCase().includes('json'))return archiveFallback('BACKEND_NOT_JSON');
   if(Number(upstream.headers.get('content-length')||0)>5_000_000)return errorResponse(502,'BACKEND_RESPONSE_TOO_LARGE');
   let data;
   try { const rawText=await upstream.text();if(rawText.length>5_000_000)return errorResponse(502,'BACKEND_RESPONSE_TOO_LARGE');data=JSON.parse(rawText); } catch {return errorResponse(502,'BACKEND_BAD_JSON');}
