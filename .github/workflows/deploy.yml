@@ -74,8 +74,8 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "$NETLIFY_AUTH_TOKEN" || -z "$NETLIFY_SITE_ID" ]]; then
-            echo "::notice::Source and backend prepared. Netlify account connection is required to publish the frontend."
-            exit 0
+            echo "::error::NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID are required; frontend was NOT published."
+            exit 1
           fi
           npx --yes netlify-cli deploy --prod --build --site "$NETLIFY_SITE_ID" --json
       - name: Remove runner credentials
