@@ -1,7 +1,7 @@
 import {gunzipSync,gzipSync} from 'node:zlib';
 import catalogParts from '../data/catalog.mjs';
 /** AICHEATCODE public read-only API proxy. No admin credentials are sent. */
-const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzMLDBhLCwdwoDn-weuxKygHgoXvcoDA_-RWmcRPQQM9Wse0D6CQoHUOxkmFUOfWwc9XQ/exec';
+const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwKfO8QxrDCCKbLdkk9SE421kCLpJeSEJvu43D9RTRGljg04gOlYRLXxyw6ovNXgmjkXg/exec';
 const headers = {
   'Content-Type': 'application/json; charset=utf-8',
   'Cache-Control': 'public, max-age=0, s-maxage=60',
