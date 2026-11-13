@@ -198,6 +198,12 @@ function apiAdminSave(token,data){
       if(d.status==='published')for(const item of included){item.values[7]='published';_update_(APP.links,item.row,item.values);}
       const final=tab===APP.news?newRow:oldRow;final[5]=d.status;
       _update_(tab,promptRow,final);SpreadsheetApp.flush();
+      // Confirm Google Sheets persisted the exact record before reporting success.
+      const persisted=_find_(tab,id);
+      if(!persisted || String(persisted.v[5])!==d.status ||
+         String(persisted.v[tab===APP.news?1:2])!==d.prompt ||
+         String(persisted.v[tab===APP.news?2:1])!==d.title)
+        throw Error('Save verification failed: persisted record differs from submitted content.');
       CacheService.getScriptCache().remove('published_delta_v1');
       let warning='';try{_log_(who,stored?'UPDATE':'CREATE',id,d.status);}catch(e){warning='Content saved, but audit logging failed. Check Vault_Audit.';}
       return {ok:true,id,status:d.status,links:included.length,warning};
@@ -276,6 +282,9 @@ function apiAdminSaveHome(token,data,action){const who=_checkSession_(token),cle
   const n=prior?prior.row:sheet.getLastRow()+1;
   sheet.getRange(n,1,1,5).setNumberFormat('@').setValues([row]);
   SpreadsheetApp.flush();
+  const confirmed=_homeRow_(key);
+  if(!confirmed || String(confirmed.values[1])!==row[1] || String(confirmed.values[2])!==row[2])
+    throw Error('Homepage save verification failed: the saved content could not be read back.');
   CacheService.getScriptCache().remove('published_delta_v1');
   let warning='';try{_log_(who,action==='publish'?'PUBLISH_HOME':'SAVE_HOME_DRAFT','home','Homepage copy update');}
   catch(e){warning='Homepage saved, but audit log could not be written.';}
