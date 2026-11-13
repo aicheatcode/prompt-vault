@@ -54,7 +54,7 @@ jobs:
           clasp list-deployments > /tmp/prompt-vault-deployments.txt
           node - <<'JS'
           const text=require('node:fs').readFileSync('/tmp/prompt-vault-deployments.txt','utf8');
-          const expected='AKfycbzyaQjThuM7dosWoj8h7me9CY6dyQ02CT2CXp9CcFSmy8X5j0E0i36UhQP07ipzOFQNKg';
+          const expected='AKfycbzMLDBhLCwdwoDn-weuxKygHgoXvcoDA_-RWmcRPQQM9Wse0D6CQoHUOxkmFUOfWwc9XQ';
           if(!text.includes(expected))throw Error('Configured script does not contain the expected web app deployment. No source pushed.');
           console.log('Existing deployment verified.');
           JS
@@ -63,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           clasp push --force
-          clasp create-deployment --deploymentId AKfycbzyaQjThuM7dosWoj8h7me9CY6dyQ02CT2CXp9CcFSmy8X5j0E0i36UhQP07ipzOFQNKg --description "Prompt Vault ${GITHUB_SHA:0:7}"
+          clasp create-deployment --deploymentId AKfycbzMLDBhLCwdwoDn-weuxKygHgoXvcoDA_-RWmcRPQQM9Wse0D6CQoHUOxkmFUOfWwc9XQ --description "Prompt Vault ${GITHUB_SHA:0:7}"
       - name: Verify live JSON feed
         run: node scripts/verify-live.mjs
       - name: Publish to configured Netlify project
@@ -74,8 +74,8 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "$NETLIFY_AUTH_TOKEN" || -z "$NETLIFY_SITE_ID" ]]; then
-            echo "::notice::Source and backend prepared. Netlify account connection is required to publish the frontend."
-            exit 0
+            echo "::error::NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID are required; frontend was NOT published."
+            exit 1
           fi
           npx --yes netlify-cli deploy --prod --build --site "$NETLIFY_SITE_ID" --json
       - name: Remove runner credentials

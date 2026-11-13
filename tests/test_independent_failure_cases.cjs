@@ -33,12 +33,14 @@ ctx._append_=(name,row)=>{if(name==='Vault_ResourceLinks'&&failLink)throw Error(
 ctx._update_=(name,row,arr)=>{if(name==='Vault_ResourceLinks'){linkWrites++;if(failLink || (failLinkOnceAt && linkWrites===failLinkOnceAt)){failLinkOnceAt=0;throw Error('INJECTED: link database write failed')}}db[name][row-2]=[...arr]};
 ctx._time_=()=> '2026-11-13T00:00:00Z';
 const found=ctx.apiAdminSearch('VALID',sid).items.some(x=>x.id===sid);
+if(!found)process.exitCode=1;
 console.log('INDEPENDENT CASE A — Admin search of existing Prompt ID:',found?'PASS':'FAIL','(source ID stored in column A; source search checks column U only)');
 const before=ctx.apiPublicChanges().newPrompts.some(x=>x.id===newId);
 failLink=true;
 let failed=false;
 try{ctx.apiAdminSave('VALID',{id:newId,title:'Updated published title',prompt:'Act as a professional mentor and provide a carefully reasoned comparison.',category:'Pendidikan',subcategory:'Practice',status:'published',links:[{type:'video',title:'Example',url:'https://example.org/test'}]})}catch(e){failed=true}
 const after=ctx.apiPublicChanges().newPrompts.some(x=>x.id===newId);
+if(!(before && after && failed))process.exitCode=1;
 console.log('INDEPENDENT CASE B — Published record remains available when child-link update fails:',before && after?'PASS':'FAIL',`(before=${before}, after=${after}, returnedError=${failed}, status=${db.Vault_NewPrompts[0][5]})`);
 
 // A different failure mode: first resource edit writes, second fails, compensation restores both.
@@ -54,4 +56,5 @@ try{ctx.apiAdminSave('VALID',{id:newId,title:'Replacement title',prompt:'Act as 
  {id:'R-bbbbbbbbbbbb',type:'application',title:'Replacement app',url:'https://example.org/d'}
 ]})}catch(e){partialError=true}
 const restored=db.Vault_NewPrompts[0][2]==='Original published title' && db.Vault_NewPrompts[0][5]==='published' && db.Vault_ResourceLinks.every(r=>r[7]==='published') && db.Vault_ResourceLinks[0][3]==='Old video';
+if(!(restored && partialError))process.exitCode=1;
 console.log('INDEPENDENT CASE C — staged link update failure compensates earlier successful writes:',restored && partialError?'PASS':'FAIL',`(restored=${restored}, error=${partialError})`);
