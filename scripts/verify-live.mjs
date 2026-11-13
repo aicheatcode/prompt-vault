@@ -1,4 +1,4 @@
-const endpoint='https://script.google.com/macros/s/AKfycbzMLDBhLCwdwoDn-weuxKygHgoXvcoDA_-RWmcRPQQM9Wse0D6CQoHUOxkmFUOfWwc9XQ/exec?feed=public';
+const endpoint='https://script.google.com/macros/s/AKfycbwKfO8QxrDCCKbLdkk9SE421kCLpJeSEJvu43D9RTRGljg04gOlYRLXxyw6ovNXgmjkXg/exec?feed=public';
 const response=await fetch(endpoint,{headers:{Accept:'application/json'},redirect:'follow',signal:AbortSignal.timeout(30000)});
 if(!response.ok)throw Error('Live backend HTTP '+response.status);
 if(!(response.headers.get('content-type')||'').includes('json'))throw Error('Live backend did not return JSON.');
