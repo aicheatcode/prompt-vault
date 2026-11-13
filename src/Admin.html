@@ -51,8 +51,10 @@ function renderHomeFields(){const panel=$('homeFields');panel.replaceChildren();
 async function loadHome(){try{const result=await run('apiAdminGetHome',token);fillHome(result.draft||result.published||result.defaults);message('homeStatus',result.draft?'Loaded saved draft.':result.published?'Loaded published homepage.':'Loaded website defaults.');}
  catch(e){message('homeStatus',e.message,true);}}
 async function persistHome(action){setBusy(true);message('homeStatus','Saving homepage…');try{
- const result=await run('apiAdminSaveHome',token,collectHome(),action);
- message('homeStatus',action==='publish'?'Homepage published. The public Netlify site will update on its next refresh (subject to cache).':'Draft saved privately. Public homepage is unchanged.');
+ const submitted=collectHome();const result=await run('apiAdminSaveHome',token,submitted,action);
+ const current=await run('apiAdminGetHome',token);const stored=action==='publish'?current.published:current.draft;
+ if(!stored||Object.keys(submitted).some(key=>stored[key]!==submitted[key]))throw Error('Save response received, but homepage read-back does not match.');
+ message('homeStatus',action==='publish'?'Published copy saved and verified in Google Sheets. Check the public website after cache refresh.':'Draft saved and verified privately. Public homepage is unchanged.');
  if(result.warning)message('homeStatus',result.warning,true);
  }catch(e){message('homeStatus',e.message,true);}finally{setBusy(false);}}
 renderHomeFields();
@@ -68,7 +70,7 @@ $('createPrompt').addEventListener('click',initialForm);
 $('addLink').addEventListener('click',()=>{if(links.length>=10){message('formStatus','Maximum ten links per record.',true);return;}links.push({type:'video',title:'',url:'',description:''});renderLinks();});
 $('editForm').addEventListener('submit',async(e)=>{e.preventDefault();const d=payload();if(d.title.length<5||d.prompt.length<20||!d.category){message('formStatus','Provide a title (5+ characters), prompt (20+ characters), and category.',true);return;}
  if(!selectedId){selectedId='N-'+(window.crypto&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2));d.id=selectedId;$('recordId').textContent=selectedId;}
- const r=await attempt('apiAdminSave',[token,d],'formStatus');if(r&&r.ok){selectedId=r.id;$('recordId').textContent=r.id;message('formStatus','Saved as '+r.status+'. Refresh the public website to verify this change.'+(r.warning?' '+r.warning:''),!!r.warning);}});
+ const r=await attempt('apiAdminSave',[token,d],'formStatus');if(r&&r.ok){selectedId=r.id;$('recordId').textContent=r.id;try{const verified=await run('apiAdminGet',token,r.id);if(verified.prompt!==d.prompt||verified.title!==d.title||verified.status!==d.status)throw Error('Saved content does not match the editor.');message('formStatus','Saved and read back as '+r.status+'. Publication on the public website still requires checking.'+(r.warning?' '+r.warning:''),!!r.warning);}catch(err){message('formStatus','Record was submitted but read-back verification failed: '+err.message,true);}}});
 $('previewRecord').addEventListener('click',()=>{const p=payload();const box=$('textPreview');box.hidden=!box.hidden;if(!box.hidden){box.textContent=p.title+'\n\n'+p.prompt+'\n\nStatus: '+p.status;box.scrollIntoView({behavior:'smooth'});}});
 $('archiveRecord').addEventListener('click',async()=>{if(!selectedId){message('formStatus','Select an existing record to archive.',true);return;}if(!confirm('Archive this record? It will be excluded from public listings after synchronization.'))return;const r=await attempt('apiAdminArchive',[token,selectedId],'formStatus');if(r&&r.ok){$('promptStatus').value='archived';message('formStatus','Record archived.');}});
 $('runHealth').addEventListener('click',async()=>{const r=await attempt('apiAdminHealth',[token],'healthStatus');if(r)message('healthStatus',r.tabs.map(x=>x.name+': '+x.rows+' rows').join(' · '));});
