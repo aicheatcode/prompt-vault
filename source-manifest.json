@@ -1,0 +1,112 @@
+[
+  {
+    "path": ".gitignore",
+    "bytes": 81,
+    "sha256": "fc4381423c7c9435ed770eaf451b0fd26bfc69fd922a6eba9f6a4f028f5dffce"
+  },
+  {
+    "path": "netlify.toml",
+    "bytes": 678,
+    "sha256": "dd6e7ea7477201146b048d8a080ad4e0488f350979789fba122926f138af3bf6"
+  },
+  {
+    "path": "README.md",
+    "bytes": 1599,
+    "sha256": "db7f136718264502505215b09b8b5ca9cea9a347595ba7929ca40fb2d6698862"
+  },
+  {
+    "path": "src/Admin.html",
+    "bytes": 21228,
+    "sha256": "026599b992b23beec46c59c87d32e90f43bd96d4538316eee8265c79c7c5d146"
+  },
+  {
+    "path": "src/Index.html",
+    "bytes": 75523,
+    "sha256": "f2f7a3d45bfaa5d396ff4c939207a34dc4d022f21dd3a1892b77ed89f8ccf240"
+  },
+  {
+    "path": "src/appsscript.json",
+    "bytes": 232,
+    "sha256": "7a18c2e6ae2f0b970285564e56ce80ca4854d85e95094369b5f5942a2ab93a43"
+  },
+  {
+    "path": "src/Catalog.gs",
+    "bytes": 1150151,
+    "sha256": "5c3ad78d33fed621e83aaeb82f4a9a790a10fa9813644217db75680f819766de"
+  },
+  {
+    "path": "src/Code.gs",
+    "bytes": 21741,
+    "sha256": "9784c295ef8359eea4687841a08e4f136420bf4d30e98bbdb865e0cf90ead8fb"
+  },
+  {
+    "path": "public/terms.html",
+    "bytes": 3104,
+    "sha256": "9389cd18dd26594a2f0fdc1e6124e6c3bccc218c738750ada97405afa7a7f0b5"
+  },
+  {
+    "path": "public/index.html",
+    "bytes": 75983,
+    "sha256": "0933ea3feb43e5c3e0bba8fb13823801d30db17cf61a446fb762b7b00791007c"
+  },
+  {
+    "path": "public/robots.txt",
+    "bytes": 39,
+    "sha256": "43fe06c8a24bcc38d15e8b172684f2f1790d7c505a040b717f092155fd25fd08"
+  },
+  {
+    "path": "public/favicon.svg",
+    "bytes": 334,
+    "sha256": "0a57a69b97481e2be9018d8a8ee6f7b891c6ae6192493b39a92af811a825c15e"
+  },
+  {
+    "path": "public/privacy.html",
+    "bytes": 3379,
+    "sha256": "96ef0ae4d111f9ab3c214bf2a9c01c66ab5c47228c29dd900937a6fd68e97440"
+  },
+  {
+    "path": "scripts/verify-live.mjs",
+    "bytes": 943,
+    "sha256": "6d72bd57a6ab0291d207847a9567ff995e92b591aeba9b23b6a52069e82a29ec"
+  },
+  {
+    "path": "tests/test_independent_failure_cases.cjs",
+    "bytes": 4930,
+    "sha256": "11449c323d22208b98a14f36262f8242b401e444eff239655f05cb69c471922b"
+  },
+  {
+    "path": "tests/test_home_editor.cjs",
+    "bytes": 5537,
+    "sha256": "d6817de2354952da5945cf915251b0edab456e234317b00e583a57383e8c35a0"
+  },
+  {
+    "path": "tests/test_publication_security.mjs",
+    "bytes": 4428,
+    "sha256": "1a15a0d2e0228d7d96806c50e5315e458cd2e6011f5c13ddbeb31d949a3fc1ae"
+  },
+  {
+    "path": "tests/test_apps_script_public_feed.cjs",
+    "bytes": 2763,
+    "sha256": "1fa211342f8f24b098d2b22573a52b3e658375e37a1da9212cae013175900525"
+  },
+  {
+    "path": "tests/test_function.mjs",
+    "bytes": 4471,
+    "sha256": "bd91097b24d19b0315ec1d70aae07130590e4ab8e00656850fb1d2fea360e0ca"
+  },
+  {
+    "path": "netlify/data/catalog.mjs",
+    "bytes": 1149219,
+    "sha256": "f286f77b31795d3c1294467f4ee677e32aa1909d7e5701fabe5421d6d22d3cdc"
+  },
+  {
+    "path": "netlify/functions/updates.mjs",
+    "bytes": 4695,
+    "sha256": "7d1f2da055c72e4c38941f576244d584868261d7efba0e58dc446d303d575f62"
+  },
+  {
+    "path": ".github/workflows/deploy.yml",
+    "bytes": 3512,
+    "sha256": "437039b80b312a15769b3078a900e51150da70199711cc19097321f18df3c8f7"
+  }
+]

@@ -1,10 +1,8 @@
-# Clasp authentication / generated project configuration
 .clasprc.json
 .clasp.json
-
-# Local dependencies and build artifacts
-node_modules/
-dist/
 .env
 .env.*
-!.env.example
+node_modules/
+.netlify/
+__pycache__/
+*.png
